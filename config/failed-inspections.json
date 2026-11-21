@@ -1,0 +1,33 @@
+{
+  "name": "failed-inspections",
+  "tenantId": "tenant-acme",
+  "workspaceId": "workspace-pune-plant",
+  "sessionId": "session-2026-11-21-morning",
+  "filters": {
+    "results": ["FAIL"]
+  },
+  "columns": [
+    {
+      "source": "id",
+      "header": "Inspection ID"
+    },
+    {
+      "source": "result",
+      "header": "Result"
+    },
+    {
+      "source": "defectType",
+      "header": "Defect Type",
+      "transform": "uppercase"
+    },
+    {
+      "source": "inspectedAt",
+      "header": "Inspected At",
+      "transform": "iso-date"
+    }
+  ],
+  "destination": {
+    "type": "local-file",
+    "path": "output/failed-inspections.csv"
+  }
+}

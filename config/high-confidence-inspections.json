@@ -1,0 +1,33 @@
+{
+  "name": "high-confidence-inspections",
+  "tenantId": "tenant-acme",
+  "workspaceId": "workspace-pune-plant",
+  "sessionId": "session-2026-11-21-morning",
+  "filters": {
+    "minimumConfidence": 0.8
+  },
+  "columns": [
+    {
+      "source": "id",
+      "header": "Inspection ID"
+    },
+    {
+      "source": "result",
+      "header": "Result"
+    },
+    {
+      "source": "confidence",
+      "header": "Confidence",
+      "transform": "percentage"
+    },
+    {
+      "source": "metadata.productionLine",
+      "header": "Production Line",
+      "transform": "uppercase"
+    }
+  ],
+  "destination": {
+    "type": "local-file",
+    "path": "output/high-confidence-inspections.csv"
+  }
+}
