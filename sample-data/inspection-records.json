@@ -1,0 +1,107 @@
+[
+  {
+    "id": "inspection-001",
+    "tenantId": "tenant-acme",
+    "workspaceId": "workspace-pune-plant",
+    "sessionId": "session-2026-11-21-morning",
+    "inspectedAt": "2026-11-21T08:00:12.000Z",
+    "result": "PASS",
+    "confidence": 0.98,
+    "metadata": {
+      "productionLine": "line-a",
+      "operator": "operator-01"
+    }
+  },
+  {
+    "id": "inspection-002",
+    "tenantId": "tenant-acme",
+    "workspaceId": "workspace-pune-plant",
+    "sessionId": "session-2026-11-21-morning",
+    "inspectedAt": "2026-11-21T08:02:45.000Z",
+    "result": "FAIL",
+    "defectType": "surface_scratch",
+    "confidence": 0.94,
+    "metadata": {
+      "productionLine": "line-a",
+      "operator": "operator-01"
+    }
+  },
+  {
+    "id": "inspection-003",
+    "tenantId": "tenant-acme",
+    "workspaceId": "workspace-pune-plant",
+    "sessionId": "session-2026-11-21-morning",
+    "inspectedAt": "2026-11-21T08:04:03.000Z",
+    "result": "PASS",
+    "confidence": 0.76,
+    "metadata": {
+      "productionLine": "line-a"
+    }
+  },
+  {
+    "id": "inspection-004",
+    "tenantId": "tenant-acme",
+    "workspaceId": "workspace-pune-plant",
+    "sessionId": "session-2026-11-21-morning",
+    "inspectedAt": "2026-11-21T08:07:31.000Z",
+    "result": "FAIL",
+    "defectType": "missing_component",
+    "confidence": 0.99,
+    "metadata": {
+      "productionLine": "line-a",
+      "operator": "operator-02"
+    }
+  },
+  {
+    "id": "inspection-005",
+    "tenantId": "tenant-acme",
+    "workspaceId": "workspace-pune-plant",
+    "sessionId": "session-2026-11-21-morning",
+    "inspectedAt": "2026-11-21T08:09:18.000Z",
+    "result": "PASS",
+    "confidence": 0.88,
+    "metadata": {
+      "productionLine": "line-b",
+      "operator": "operator-03"
+    }
+  },
+  {
+    "id": "inspection-006",
+    "tenantId": "tenant-acme",
+    "workspaceId": "workspace-pune-plant",
+    "sessionId": "session-2026-11-21-morning",
+    "inspectedAt": "2026-11-21T08:11:52.000Z",
+    "result": "FAIL",
+    "defectType": "incorrect_alignment",
+    "confidence": 0.71,
+    "metadata": {
+      "productionLine": "line-b",
+      "operator": "operator-03"
+    }
+  },
+  {
+    "id": "inspection-007",
+    "tenantId": "tenant-acme",
+    "workspaceId": "workspace-pune-plant",
+    "sessionId": "session-2026-11-21-morning",
+    "inspectedAt": "2026-11-21T08:14:26.000Z",
+    "result": "PASS",
+    "confidence": 0.96,
+    "metadata": {
+      "productionLine": "line-b"
+    }
+  },
+  {
+    "id": "inspection-008",
+    "tenantId": "tenant-acme",
+    "workspaceId": "workspace-pune-plant",
+    "sessionId": "session-2026-11-21-morning",
+    "inspectedAt": "2026-11-21T08:17:09.000Z",
+    "result": "FAIL",
+    "confidence": 0.62,
+    "metadata": {
+      "productionLine": "line-b",
+      "operator": "operator-04"
+    }
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "name": "data-export",
+  "version": "1.0.0",
+  "description": "Customer Configurable Data Export Pipeline",
+  "main": "cli.js",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "dev": "tsx watch src/cli.ts",
+    "build": "tsc --noEmit",
+    "lint": "eslint . --ext .ts",
+    "start": "tsx src/cli.ts",
+    "export": "tsx src/run-export.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NKJ-C4/data-export.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NKJ-C4/data-export/issues"
+  },
+  "homepage": "https://github.com/NKJ-C4/data-export#readme",
+  "dependencies": {
+    "csv": "^6.6.4",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6"
+  }
+}
