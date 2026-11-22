@@ -1,0 +1,6 @@
+Inspection ID,Result,Confidence,Production Line
+inspection-001,PASS,98%,LINE-A
+inspection-002,FAIL,94%,LINE-A
+inspection-004,FAIL,99%,LINE-A
+inspection-005,PASS,88%,LINE-B
+inspection-007,PASS,96%,LINE-B

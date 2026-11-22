@@ -10,7 +10,7 @@
     "build": "tsc --noEmit",
     "lint": "eslint . --ext .ts",
     "start": "tsx src/cli.ts",
-    "export": "tsx src/run-export.ts"
+    "export": "node --import tsx src/cli.ts"
   },
   "repository": {
     "type": "git",
