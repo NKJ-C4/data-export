@@ -18,6 +18,8 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Runtime files
+/data/export.sqlite
+/data/export.sqlite-*
 pids/
 *.pid
 *.pid.lock

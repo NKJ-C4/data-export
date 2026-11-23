@@ -4,6 +4,7 @@
   "description": "Customer Configurable Data Export Pipeline",
   "main": "cli.js",
   "scripts": {
+    "db:init": "node --import tsx src/storage/init-db.ts",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "dev": "tsx watch src/cli.ts",
