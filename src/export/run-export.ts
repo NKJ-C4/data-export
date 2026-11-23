@@ -4,6 +4,7 @@ import path from "node:path";
 import { stringify } from "csv/sync";
 import type { InspectionRecord } from "../domain/inspection-record";
 import { validateExportConfig, type ExportConfig } from "./export-config";
+import { openExportDatabase } from "../storage/export-db";
 
 function matches(record: InspectionRecord, config: ExportConfig): boolean {
   const { results, minimumConfidence = 0 } = config.filters;
@@ -53,16 +54,41 @@ async function saveReport(destination: string, csv: string) {
   }
 }
 
-export async function runExport(configPath: string) {
-  const config = validateExportConfig(JSON.parse(await readFile(configPath, "utf8")));
-  // The source for this milestone is the repository's inspection fixture.
-  const records: InspectionRecord[] = JSON.parse(
-    await readFile("sample-data/inspection-records.json", "utf8"),
-  );
+async function writeReport(config: ExportConfig, records: InspectionRecord[]) {
   const selected = records.filter(record => matches(record, config));
   const headers = config.columns.map(column => column.header);
   const rows = selected.map(record => config.columns.map(column => cell(record, column)));
   const output = path.normalize(config.destination.path.replaceAll("\\", "/"));
   await saveReport(output, stringify([headers, ...rows], { escape_formulas: true }));
   return { name: config.name, read: records.length, exported: selected.length, output };
+}
+
+export async function runExport(configPath: string, onStarted?: (runId: string) => void) {
+  const config = validateExportConfig(JSON.parse(await readFile(configPath, "utf8")));
+  const records: InspectionRecord[] = JSON.parse(
+    await readFile("sample-data/inspection-records.json", "utf8"),
+  );
+  if (!Array.isArray(records)) throw new Error("Expected an array of inspection records");
+
+  // Positions start at 1 in the append-only sample. An empty source has boundary 0.
+  const boundary = records.length;
+  const runId = randomUUID();
+  const db = openExportDatabase();
+  try {
+    db.prepare(`INSERT INTO export_runs (run_id, status, config_snapshot, source_boundary)
+                VALUES (?, 'running', ?, ?)`).run(runId, JSON.stringify(config), boundary);
+    let result;
+    try {
+      onStarted?.(runId);
+      result = await writeReport(config, records);
+    } catch (error) {
+      db.prepare("UPDATE export_runs SET status = 'failed' WHERE run_id = ?").run(runId);
+      throw error;
+    }
+    db.prepare(`UPDATE export_runs SET status = 'completed', completed_at = CURRENT_TIMESTAMP,
+                last_processed_sequence = source_boundary WHERE run_id = ?`).run(runId);
+    return { ...result, runId };
+  } finally {
+    db.close();
+  }
 }

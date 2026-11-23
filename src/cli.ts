@@ -13,7 +13,7 @@ async function main() {
     return;
   }
   if (!values.config) throw new Error(usage);
-  const result = await runExport(values.config);
+  const result = await runExport(values.config, runId => console.log(`Run ID: ${runId}`));
   console.log(`${result.name}: exported ${result.exported} of ${result.read} records to ${result.output}`);
 }
 

@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { DatabaseSync } from "node:sqlite";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -33,6 +34,52 @@ function report(name: string) {
   expect(result.status, result.stderr).toBe(0);
   return parse(readFileSync(path.join(directory, "output", `${name}.csv`)));
 }
+
+function storedRuns() {
+  const db = new DatabaseSync(path.join(directory, "data/export.sqlite"), { readOnly: true });
+  try {
+    return db.prepare("SELECT * FROM export_runs ORDER BY rowid").all();
+  } finally {
+    db.close();
+  }
+}
+
+it("keeps each run's original settings and boundary when the next export starts", () => {
+  const name = "failed-inspections";
+  const configPath = path.join(directory, "config", `${name}.json`);
+  const original = JSON.parse(readFileSync(configPath, "utf8"));
+  const first = run(name);
+  expect(first.status, first.stderr).toBe(0);
+
+  const sourcePath = path.join(directory, "sample-data/inspection-records.json");
+  const records: InspectionRecord[] = JSON.parse(readFileSync(sourcePath, "utf8"));
+  records.push({ ...records[0], id: "later" });
+  writeFileSync(sourcePath, JSON.stringify(records));
+  const edited = { ...original, filters: { results: ["PASS"] } };
+  writeFileSync(configPath, JSON.stringify(edited));
+  const second = run(name);
+  expect(second.status, second.stderr).toBe(0);
+
+  const runs = storedRuns();
+  expect(runs).toHaveLength(2);
+  const [a, b] = runs;
+  expect(first.stdout).toContain(`Run ID: ${a.run_id}`);
+  expect(second.stdout).toContain(`Run ID: ${b.run_id}`);
+  expect(a.run_id).not.toBe(b.run_id);
+  expect(a).toMatchObject({ status: "completed", source_boundary: 8, last_processed_sequence: 8 });
+  expect(b).toMatchObject({ status: "completed", source_boundary: 9, last_processed_sequence: 9 });
+  expect(JSON.parse(String(a.config_snapshot))).toEqual(original);
+  expect(JSON.parse(String(b.config_snapshot))).toEqual(edited);
+});
+
+it("retains the run ID and a failed status if the CSV cannot be published", () => {
+  mkdirSync(path.join(directory, "output/failed-inspections.csv"), { recursive: true });
+  const result = run("failed-inspections");
+  expect(result.status).toBe(1);
+  const [row] = storedRuns();
+  expect(result.stdout).toContain(`Run ID: ${row.run_id}`);
+  expect(row).toMatchObject({ status: "failed", last_processed_sequence: 0, completed_at: null });
+});
 
 it("exports the four failed inspections with the requested columns and a blank for a missing defect", () => {
   expect(report("failed-inspections")).toEqual([
