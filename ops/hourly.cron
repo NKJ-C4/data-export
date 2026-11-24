@@ -1,0 +1,2 @@
+# Optional user crontab template. Replace the two paths before installing.
+0 * * * * cd '/absolute/path/to/data-export' && '/absolute/path/to/node' --import tsx src/cli.ts --config config/failed-inspections.json --hourly
