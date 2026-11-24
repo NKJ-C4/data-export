@@ -1,14 +1,25 @@
 # data-export
 Customer Configurable Data Export Pipeline
 
-I spent roughly 12–14 active hours on this assignment across sessions from Saturday night through Tuesday. I built an hourly CSV exporter that lets customers choose which inspections to include and how to format the columns. It saves progress in SQLite so an interrupted run can resume without duplicating rows in the report. I used a local inspection dataset, local CSV files, and host cron to keep the demo easy to run. For production, I’d first enforce tenant and workspace permissions, then add automatic recovery so a stalled hourly report can finish without an operator restarting it.
+I built an hourly CSV exporter that lets customers choose which inspections to include and how to format the columns. It saves progress in SQLite so an interrupted run can resume without duplicating rows in the report. I used a local inspection dataset, local CSV files, and host cron to keep the demo easy to run. For production, I’d first enforce tenant and workspace permissions, then add automatic recovery so a stalled hourly report can finish without an operator restarting it. I spent roughly 12–14 active hours on this assignment across sessions from Saturday night through Tuesday.
 
 The [design document](docs/architecture.md) includes the architecture diagram, all three customer scenarios, and the rollout and recovery trade-offs.
 
-Use Node.js 22.22.1 (tested) and npm. From the cloned project root, install dependencies and run the two reports over the same eight sample inspections. All demo commands, including hourly replay and recovery tests, work without installing a cron job.
+## Local setup
+
+Use Node.js 22.22.1 (tested) and npm. The first export creates the SQLite database automatically. Cron is optional and only needed for unattended hourly exports.
 
 ```sh
+git clone https://github.com/NKJ-C4/data-export.git
+cd data-export
 npm ci
+```
+
+### Run the sample reports
+
+From the project root, generate both CSVs from the same eight sample inspections and run the tests.
+
+```sh
 npm run export -- --config config/failed-inspections.json
 npm run export -- --config config/high-confidence-inspections.json
 npm test
