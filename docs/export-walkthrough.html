@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>From inspection to hourly CSV · Data export walkthrough</title>
+<style>
+:root{--paper:#f7f6ef;--ink:#172e2a;--muted:#4c635c;--line:#cbd3c8;--forest:#173e35;--mint:#ccffa1;--orange:#ffd0a6;--mono:"SFMono-Regular",Consolas,monospace}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,sans-serif}main{max-width:1080px;margin:auto;padding:28px clamp(16px,5vw,58px) 52px}
+.top,nav,.panel-head,.foot{display:flex;align-items:center;justify-content:space-between;gap:1em;flex-wrap:wrap}.top{border-bottom:1px solid var(--line);padding-bottom:14px}.label,.top,.number,dt{font:600 .77rem/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+a{color:inherit;text-underline-offset:4px}.top a{text-transform:none;letter-spacing:0}header{padding:34px 0 24px}h1,h2,h3,p{margin:0}h1,h2{font-family:Georgia,serif;font-weight:500;letter-spacing:-.045em;line-height:1.08}h1{font-size:clamp(2.4rem,6vw,4.4rem);max-width:18ch}header p{max-width:66ch;color:var(--muted);margin-top:12px}
+.panel{background:var(--forest);background-image:radial-gradient(#ffffff12 1px,transparent 1px);background-size:17px 17px;color:#f6f8ee;border-radius:16px;padding:clamp(16px,4vw,32px)}.panel-head{border-bottom:1px solid #ffffff40;padding-bottom:14px}.panel .label{color:var(--mint)}.meta{font:.8rem/1.5 var(--mono);color:#d9e6d9}
+.batches{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}.batch small{font:.75rem var(--mono);color:#d0ded3}.pair{display:flex;gap:4px;margin-top:7px}.record{flex:1;text-align:center;border:1px solid #76978a;border-radius:5px;padding:12px 1px;color:#dae5dc;font:600 .95rem var(--mono);transition:background-color .25s,color .25s}.record small{display:block;font:.62rem var(--mono);color:inherit;margin-top:5px}.record.scanned{background:#306052;color:white}.record.kept{background:var(--mint);color:#1b3928}.record.attempt{background:var(--orange);color:#56331b}.record.rolled{border:2px dashed var(--orange);color:var(--orange);padding:11px 0}
+.stats{display:flex;gap:clamp(12px,5vw,58px);flex-wrap:wrap;border-top:1px solid #ffffff40;padding-top:12px;margin:0}dt{color:#c2d4c8;font-size:.68rem}dd{margin:2px 0 0;font:500 1.28rem/1.4 var(--mono)}
+.story{padding:22px 0 16px}.story h2{font-size:clamp(1.65rem,4vw,2.5rem);margin:5px 0 8px}.story p{color:var(--muted);max-width:76ch;min-height:3.1em}.number{color:var(--muted)}button,select{font:inherit;border:1px solid var(--line);color:var(--ink);background:transparent;border-radius:6px;padding:8px 12px}button{cursor:pointer}button:disabled{opacity:.45;cursor:default}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #ac5903;outline-offset:3px}#next{background:var(--ink);color:white}.dots{display:flex;gap:4px}.dot{height:5px;width:clamp(12px,3vw,26px);background:var(--line);border-radius:3px}.dot.on{background:var(--forest)}
+.reports{border-top:1px solid var(--line);margin-top:30px;padding-top:26px}.reports h2{font-size:2rem}.reports label{font-size:.86rem}.reports p{margin:12px 0;color:var(--muted)}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font:.85rem/1.65 var(--mono)}th,td{text-align:left;white-space:nowrap;padding:7px 9px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-family:system-ui,sans-serif}th:first-child,td:first-child{padding-left:0}.foot{margin-top:22px;color:var(--muted);font-size:.86rem}
+@media(max-width:620px){.batches{grid-template-columns:repeat(2,1fr)}.story p{min-height:0}.dots{order:2}.top{gap:4px}main{padding-top:16px}}
+@media(prefers-reduced-motion:no-preference){.change{animation:enter .25s ease-out}@keyframes enter{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:none}}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style></head>
+<body><main>
+<div class="top"><span>Inspection data / CSV exports</span><a href="architecture.drawio.png">Architecture diagram ↗</a></div>
+<header><h1>From inspection to hourly CSV</h1><p>Follow the Pune plant’s morning report. Eight products were inspected. The customer wants the failures, delivered once for the reporting hour.</p></header>
+<section class="panel" aria-label="Illustrated run state">
+<div class="panel-head"><strong class="label">Failed inspections</strong><span class="meta">21 Nov 2026 · 08:00–09:00 UTC</span></div>
+<div class="batches" id="batches"></div>
+<dl class="stats"><div><dt>Last saved position</dt><dd id="checkpoint">0 / 8</dd></div><div><dt>Saved CSV rows</dt><dd id="count">0</dd></div><div><dt>Report file</dt><dd id="file">Pending</dd></div></dl>
+</section>
+<section class="story" aria-live="polite" aria-atomic="true"><div class="number" id="step"></div><h2 id="scene"></h2><p id="description"></p></section>
+<nav aria-label="Walkthrough controls"><div class="dots" aria-hidden="true" id="dots"></div><div><button id="prev" type="button">Back</button> <button id="next" type="button">Next step →</button></div></nav>
+<section class="reports"><div class="panel-head"><h2>Compare the reports</h2><label>Configuration <select id="report"><option>Failed inspections</option><option>High confidence</option></select></label></div>
+<p id="caption"></p><div class="table-wrap"><table aria-label="Sample CSV contents" id="table"></table></div></section>
+<div class="foot"><span>Illustrated replay using the repository’s sample records.</span><a href="../README.md">Run the CLI and recovery demo ↗</a></div>
+<noscript>Enable JavaScript for the step controls and CSV comparison. The linked README explains how to run the same workflow locally.</noscript>
+</main>
+<script>
+const reports = [[["Inspection ID","Result","Defect Type","Inspected At"],["inspection-002","FAIL","SURFACE_SCRATCH","2026-11-21T08:02:45.000Z"],["inspection-004","FAIL","MISSING_COMPONENT","2026-11-21T08:07:31.000Z"],["inspection-006","FAIL","INCORRECT_ALIGNMENT","2026-11-21T08:11:52.000Z"],["inspection-008","FAIL","","2026-11-21T08:17:09.000Z"]],[["Inspection ID","Result","Confidence","Production Line"],["inspection-001","PASS","98%","LINE-A"],["inspection-002","FAIL","94%","LINE-A"],["inspection-004","FAIL","99%","LINE-A"],["inspection-005","PASS","88%","LINE-B"],["inspection-007","PASS","96%","LINE-B"]]];
+const scenes = [
+  ["Choose what to export","Acme’s configuration selects failed inspections from one workspace and session. It asks for four columns and uppercase defect names. The CLI validates those choices before processing.",0],
+  ["Open the 08:00 reporting hour","With the cron entry installed, the 09:00 UTC trigger starts the previous hour’s report. SQLite saves the run ID, settings, and source boundary of 8. Inspections added afterward cannot change this run.",0],
+  ["Commit the first two inspections","001 passed. 002 failed with a surface scratch. SQLite saves row 002 and checkpoint 2 together. The checkpoint counts inspections checked, including the ones filtered out.",2],
+  ["Interrupt the second batch","003 passed and 004 failed. The recovery demo forces an error after staging row 004 but before saving checkpoint 4. The row is still inside an open SQLite transaction.",2],
+  ["See what survived","SQLite rolls back the second batch. Row 002 and checkpoint 2 survive on disk. Row 004 must be processed again. The customer has yet to receive a file.",2],
+  ["Resume the same run","A fresh CLI process opens the saved run ID, reads its original settings, and starts at 003. This time it commits row 004 and checkpoint 4 together.",4],
+  ["Publish the complete CSV","The worker finishes the last two pairs, writes one header and the four saved rows to a temporary file, then renames it to the dated CSV. The recovery demo checks the file against an uninterrupted export byte for byte.",8],
+  ["Repeat the hourly trigger","The same tenant, configuration name, and UTC hour identify the completed run. A repeat trigger returns its run ID and skips publication. The following hour gets a separate file.",8]
+];
+let index = 0;
+const get = id => document.getElementById(id);
+const failed = new Set(reports[0].slice(1).map(row=>Number(row[0].split("-")[1])));
+for(let i=1;i<=8;i+=2){
+  const batch=document.createElement("div"); batch.className="batch";
+  batch.innerHTML='<small>Batch '+((i+1)/2)+'</small><div class="pair"></div>';
+  for(const n of [i,i+1]){const node=document.createElement("div");node.className="record";node.dataset.n=n;batch.lastElementChild.append(node);}
+  get("batches").append(batch);
+}
+function render(){
+  const [title,copy,checkpoint]=scenes[index];
+  get("step").textContent="Step "+(index+1)+" of "+scenes.length;
+  get("scene").textContent=title;get("description").textContent=copy;
+  const story=document.querySelector(".story"); story.classList.remove("change");void story.offsetWidth;story.classList.add("change");
+  get("checkpoint").textContent=checkpoint+" / 8";
+  get("count").textContent=[...failed].filter(n=>n<=checkpoint).length;
+  get("file").textContent=index>=6?"Published":"Pending";
+  document.querySelectorAll(".record").forEach(node=>{
+    const n=Number(node.dataset.n);let state="",label="Waiting";
+    if(n<=checkpoint){state=failed.has(n)?"kept":"scanned";label=failed.has(n)?"Saved":"Skipped";}
+    if(n===3 && index===3){state="scanned";label="Checked";}
+    if(n===4 && index===3){state="attempt";label="Staged";}
+    if(n===4 && index===4){state="rolled";label="Undone";}
+    node.className="record "+state;node.innerHTML=String(n).padStart(3,"0")+"<small>"+label+"</small>";
+  });
+  get("dots").innerHTML=scenes.map((_,s)=>'<span class="dot '+(s<=index?"on":"")+'"></span>').join("");
+  get("prev").disabled=index===0;get("next").textContent=index===scenes.length-1?"Replay ↺":"Next step →";
+}
+function showReport(){
+  const which=get("report").selectedIndex,[headers,...rows]=reports[which];
+  get("caption").textContent=which?"Five inspections met the 80% confidence threshold. Both passing and failing inspections qualify.":"Four inspections failed. Inspection 008 has an empty defect cell because its source record has no defect type.";
+  const table=get("table");table.replaceChildren();
+  const head=table.createTHead().insertRow();headers.forEach(name=>{const th=document.createElement("th");th.scope="col";th.textContent=name;head.append(th);});
+  const body=table.createTBody();for(const values of rows){const row=body.insertRow();for(const value of values)row.insertCell().textContent=value;}
+}
+get("prev").onclick=()=>{if(index>0)index--;render();};get("next").onclick=()=>{index=(index+1)%scenes.length;render();};
+get("report").onchange=showReport;render();showReport();
+</script></body></html>

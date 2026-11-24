@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Customer-configurable data export architecture</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --ink: #17212b;
+        --muted: #52606d;
+        --line: #9aa7b2;
+        --surface: #ffffff;
+        --canvas: #f5f7f9;
+        --blue: #1769aa;
+        --blue-soft: #dceefe;
+        --green: #0d7a52;
+        --green-soft: #dbf5e8;
+        --amber: #9b6100;
+        --amber-soft: #fff0ce;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --ink: #e7edf2;
+          --muted: #b0bdc7;
+          --line: #728190;
+          --surface: #16212b;
+          --canvas: #0d141b;
+          --blue: #8ac5ff;
+          --blue-soft: #153b5d;
+          --green: #77d8ae;
+          --green-soft: #113d2d;
+          --amber: #ffd28a;
+          --amber-soft: #563b0a;
+        }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--canvas); color: var(--ink); font: 16px/1.45 system-ui, sans-serif; }
+      main { max-width: 1240px; margin: 0 auto; padding: 32px 20px 48px; }
+      h1 { margin: 0; font-size: 1.8rem; }
+      .lede { color: var(--muted); margin: 8px 0 28px; }
+      .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; color: var(--muted); font-size: .9rem; }
+      .key { display: inline-flex; align-items: center; gap: 6px; }
+      .swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); }
+      .diagram { display: grid; grid-template-columns: minmax(190px, .9fr) 42px minmax(270px, 1.25fr) 42px minmax(190px, .9fr); gap: 12px 0; align-items: center; }
+      .lane { display: grid; gap: 14px; }
+      .node { min-height: 88px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+      .node h2 { font-size: 1rem; margin: 0 0 6px; }
+      .node p { font-size: .88rem; color: var(--muted); margin: 0; }
+      .implemented { background: var(--green-soft); border-color: var(--green); }
+      .proposed { background: var(--blue-soft); border-color: var(--blue); }
+      .state { background: var(--amber-soft); border-color: var(--amber); }
+      .arrow { color: var(--line); font-size: 28px; text-align: center; }
+      .middle { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      .wide { grid-column: 1 / -1; }
+      .footer { margin-top: 28px; padding: 16px; background: var(--surface); border-radius: 8px; color: var(--muted); }
+      .footer strong { color: var(--ink); }
+      @media (max-width: 760px) {
+        .diagram { grid-template-columns: 1fr; }
+        .arrow { transform: rotate(90deg); }
+        .middle { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Customer-configurable data export platform</h1>
+      <p class="lede">Shared execution flow with configuration-specific selection, transformation, and delivery.</p>
+      <div class="legend" aria-label="Diagram legend">
+        <span class="key"><span class="swatch" style="background:var(--green-soft);border-color:var(--green)"></span>Implemented local prototype</span>
+        <span class="key"><span class="swatch" style="background:var(--blue-soft);border-color:var(--blue)"></span>Proposed production component</span>
+        <span class="key"><span class="swatch" style="background:var(--amber-soft);border-color:var(--amber)"></span>Persistent run state</span>
+      </div>
+      <section class="diagram" aria-label="Data export architecture">
+        <div class="lane">
+          <article class="node implemented"><h2>Export configuration</h2><p>Fields, filters, formatting, schedule, destination, and version.</p></article>
+          <article class="node proposed"><h2>Tenant access policy</h2><p>Authorizes the customer, workspace, destination, and stored credentials.</p></article>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="middle">
+          <article class="node proposed"><h2>Export API and scheduler</h2><p>Validates requests, creates immutable export runs, and starts scheduled work.</p></article>
+          <article class="node state"><h2>Export run store</h2><p>Configuration snapshot, source boundary, status, checkpoints, and delivery attempts.</p></article>
+          <article class="node proposed"><h2>Queue and workers</h2><p>Reads bounded batches, applies filters and transforms, and retries safely.</p></article>
+          <article class="node proposed"><h2>Observability</h2><p>Run status, counts, errors, audit events, metrics, and alerts.</p></article>
+          <article class="node proposed wide"><h2>Inspection data access</h2><p>Queries inspection records using a fixed source boundary. Image references are resolved through a storage locator that supports old and new locations.</p></article>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="lane">
+          <article class="node proposed"><h2>Object-storage adapter</h2><p>Copies selected images with customer naming and session grouping.</p></article>
+          <article class="node implemented"><h2>CSV adapter</h2><p>Writes the configured report to a local CSV file in the prototype.</p></article>
+          <article class="node proposed"><h2>ERP API adapter</h2><p>Maps events, controls rate, retries requests, and uses idempotency keys.</p></article>
+        </div>
+      </section>
+      <p class="footer"><strong>Implemented today.</strong> An hourly cron entry invokes the local CLI for the preceding UTC hour. SQLite saves the run settings, reporting window, output path, and batch checkpoints. The CLI publishes one dated CSV per scheduled report. The managed queue, scheduler service, remote adapters, and monitoring are proposed.</p>
+    </main>
+  </body>
+</html>
