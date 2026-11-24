@@ -150,3 +150,7 @@ npm test
 ~~~
 
 See the [README](../README.md) for expected files and cron setup.
+
+## Extras
+
+I used ChatGPT to create an optional [HTML walkthrough](export-walkthrough.html) to illustrate the implemented workflow, since the CLI has no graphical UI. The simulation shows how the saved checkpoint and CSV rows change as a batch fails and the export resumes. To observe the same recovery behavior in SQLite, run `npm run demo:recovery`.

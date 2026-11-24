@@ -77,3 +77,7 @@ retries a failed one using the saved config, boundary and path. After a hard sto
 confirm the old process has exited and use `--resume <run-id>`. Replay a missed
 hour with the explicit-hour command above. Published windows keep their original
 source boundary if late inspections arrive.
+
+## Extras
+
+The exporter runs from the command line and has no graphical UI. I used ChatGPT to create an optional [HTML walkthrough](docs/export-walkthrough.html) so you can see how it works. Open the file in a browser to follow eight sample inspections through a simulated export, see what survives an interruption, and compare the CSVs produced by two configurations.
